@@ -78,3 +78,10 @@ simulate_random <- function(n_hist,n_episodes){
 
     print(paste("average returns for this simulation: ", returns))
 }
+
+# generates random action (portfolio vector)
+# params: number of assets in portfolio
+random_action <- function(n_assets){
+    x <- runif(n_assets+1)
+    return(x/sum(x))
+}
