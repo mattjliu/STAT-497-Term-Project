@@ -85,3 +85,29 @@ random_action <- function(n_assets){
     x <- runif(n_assets+1)
     return(x/sum(x))
 }
+
+# Returns the softmax for a given action in preference vector Ht
+get_softmax <- function(a,Ht){
+    if(sum(exp(Ht)) == 0) return(0)
+    return(exp(Ht[a]) / sum(exp(Ht)))
+}
+
+# Does gradient ascent on expected reward and returns updated preference vector
+get_update <- function(Rt,Rvec,Ht,a,alpha){
+    
+    pi_t <- get_softmax(a,Ht)
+    
+    if(length(Rvec) == 0){
+        mean_r_vec <- 0
+        } else {
+        mean_r_vec <- mean(Rvec)
+    }
+    for(i in 1:length(Ht)){
+        if(i == a){
+            Ht[i] <- Ht[i] + alpha * (Rt - mean_r_vec) * (1 - pi_t)
+        } else {
+            Ht[i] <- Ht[i] - alpha * (Rt - mean_r_vec) * pi_t
+        }
+    }
+    return(Ht)
+}
