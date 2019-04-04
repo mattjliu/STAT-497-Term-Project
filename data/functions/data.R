@@ -11,8 +11,8 @@ require("lubridate")
 # All relevant params
 currency_vec = c("ETH","XRP","XMR","LTC")
 params <- list("start"=toString(as.numeric(as.POSIXct("2017-05-01 4:00:00"))),
-                    "end"=toString(as.numeric(as.POSIXct("2018-05-01 4:00:00"))),
-                    "period"="14400")
+                    "end"=toString(as.numeric(as.POSIXct("2019-05-01 4:00:00"))),
+                    "period"="7200")
 base <- "https://poloniex.com/public?command=returnChartData"
 
 # Function that gets the chart data using api

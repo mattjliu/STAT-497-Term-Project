@@ -22,7 +22,13 @@ prices_vec <- list(high,low,open,close)
 ###################################################
 
 # simulate random actions
+print("Simulate random actions")
 simulate_random(10,100)
 
-# simualte contextual
-simulate_contextual(5,20000,0.3,10,0.8)
+# simulate contextual 1
+print("Simulate contextual version 1")
+simulate_contextual1(5,100,0.3,10,0.8)
+
+# simulate contextual 2
+print("simulate contextual version 2")
+simulate_contextual2(5,100,0.6,10,0.8)

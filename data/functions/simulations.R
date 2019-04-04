@@ -102,7 +102,7 @@ simulate_samples <- function(n_samples,n_episodes){
 # alpha: learning rate of the action preference functions
 # window_size: size of rolling window of asset prices to consider in the action preferences
 # discount: discount factor of previous price changes
-simulate_contextual <- function(n_curren,n_steps,alpha,window_size,discount){
+simulate_contextual1 <- function(n_curren,n_steps,alpha,window_size,discount){
     
     Ht <- rep(0,5) # initialize preference vector
     
@@ -129,6 +129,8 @@ simulate_contextual <- function(n_curren,n_steps,alpha,window_size,discount){
     # Define reward vecs and random action reward vectors
     Rvec <- c()
     Rvec_random <- c()
+    Rvec_market <- c()
+    market_average <- rep(1/5,5)
     
     for(i in window_size:n_steps){
         # get price dataframe of current time step
@@ -159,8 +161,16 @@ simulate_contextual <- function(n_curren,n_steps,alpha,window_size,discount){
         # Reward for random action
         Rvec_random <- c(Rvec_random,exp(getLogReturns(yt,random_action(4))))
         
+        # Reward for market average
+        Rvec_market <- c(Rvec_market,exp(getLogReturns(yt,market_average)))
+        
         # Update preference vector
         Ht <- get_update(rt,Rvec,Ht,action,alpha)
+        
+        print(log(yt))
+        print(Ht)
+        print(piVec)
+        print("=========================================")
         
 #         print(paste0("episode",i))
 #         print(cat("Ht: ", Ht))
@@ -173,6 +183,107 @@ simulate_contextual <- function(n_curren,n_steps,alpha,window_size,discount){
         st <- weight_vec %*% history
             
     }
-    return(c(mean(Rvec),mean(Rvec_random)))
+    
+    print(prod(Rvec))
+    print(prod(Rvec_random))
+    print(prod(Rvec_market))
+    return(c(prod(Rvec),prod(Rvec_market)))
+    
+}
+
+# simulates contextual bandits problem
+# This time action preferences are updated as if we pull all bandits and each timestep
+# This is because we have full information of the environment
+# params
+# n_curren: number of currencies in proble (including cash)
+# n_steps: number of timesteps in the episode
+# alpha: learning rate of the action preference functions
+# window_size: size of rolling window of asset prices to consider in the action preferences
+# discount: discount factor of previous price changes
+simulate_contextual2 <- function(n_curren,n_steps,alpha,window_size,discount){
+    Ht <- rep(0,5) # initialize preference vector
+    
+    # Initialize weight vector for moving average window
+    weight_vec <- c()
+    for(k in 0:(window_size-1))
+        weight_vec <- c(weight_vec,discount^k)
+    weight_vec <- rev(weight_vec)
+    
+    price <- head(close,window_size+1) # initializes the price dataframe as the first 2 price vectors
+    
+    # history vector of price changes
+    history <- getPriceRelativeVec(price[1,],price[2,])
+    for(h in 2:window_size){
+        history <- rbind(history,getPriceRelativeVec(price[h,],price[h+1,]))
+    }
+    
+    # Define state st as vector of discounted previous relative changes
+    st <- weight_vec %*% history
+    
+    prev_v <- tail(price,1) # initializes first price vector v
+    
+    # Define reward vecs and random action reward vectors
+    Rvec <- c()
+    Rvec_random <- c()
+    Rvec_market <- c()
+    market_average <- rep(1/5,5)
+    Rmat <- matrix(0,nrow=1,ncol=n_curren)
+    
+    for(i in window_size:n_steps){
+        # get price dataframe of current time step
+        price <- head(close,i+2)
+        # get the current v
+        curr_v <- tail(price,1)
+        # get price change
+        yt <- getPriceRelativeVec(prev_v,curr_v)
+        
+        # update history matrix
+        history <- rbind(tail(history,window_size-1),yt)
+        
+        # preference vector for state s (element-wise multiplication of Ht and st)
+        Ht_s <- st * Ht
+        
+        # Compute pivec (softmaxes for each currency)
+        piVec <- c()
+        for(a in 1:n_curren)
+            piVec <- c(piVec,get_softmax(a,Ht_s))
+        
+        # get the log returns for our action (in this case our action is the softax)
+        rt <- exp(getLogReturns(yt,piVec))
+        Rvec <- c(Rvec,rt)
+        
+        # get the log returns for pulling each arm
+        Rvec_bandits <- c()
+        for(a in 1:n_curren)
+            Rvec_bandits <- c(Rvec_bandits,log(yt[a]))
+        
+        # update preference vector
+        Ht <- get_update_all_bandits(Rvec_bandits,Rmat,Ht,alpha)
+        print(Rvec_bandits)
+        print(Ht)
+        print(piVec)
+        print("============================================")
+        
+        # check if we are at first timestep, and if so, initialize Rmat, else append to Rmat
+        if(i == window_size)
+            Rmat <-  matrix(Rvec_bandits,nrow=1,ncol=n_curren)
+        else
+            Rmat <- rbind(Rmat,Rvec_bandits)
+        
+        # Reward for random action
+        Rvec_random <- c(Rvec_random,exp(getLogReturns(yt,random_action(4))))
+        
+        # Reward for market average
+        Rvec_market <- c(Rvec_market,exp(getLogReturns(yt,market_average)))
+        
+        # update prevsous price and state
+        prev_v <- curr_v
+        st <- weight_vec %*% history
+        
+    }
+    print(prod(Rvec))
+    print(prod(Rvec_random))
+    print(prod(Rvec_market))
+    return(c(prod(Rvec),prod(Rvec_market)))
     
 }

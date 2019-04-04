@@ -111,3 +111,14 @@ get_update <- function(Rt,Rvec,Ht,a,alpha){
     }
     return(Ht)
 }
+
+get_update_all_bandits <- function(Rt,Rmat,Ht,alpha){
+    
+    for(a in 1:length(Ht)){
+        mean_r_vec <- mean(Rmat[,a])
+        pi_t <- get_softmax(a,Ht)
+
+    Ht[a] <- Ht[a] + alpha * (Rt[a] - mean_r_vec) * (1 - pi_t)
+    }
+    return(Ht)
+}

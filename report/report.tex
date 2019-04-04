@@ -1,0 +1,120 @@
+\documentclass[a4paper,12pt]{article}
+
+% Packages
+\usepackage{float}
+\usepackage[utf8]{inputenc}
+\usepackage{fancyhdr}
+\usepackage[left = 0.6 in, right = 0.6 in, top = 1 in, bottom = 1 in, headsep = 0.5 in]{geometry}
+\usepackage[normalem]{ulem}
+\usepackage{enumerate}
+\usepackage{pgfplots}
+\usepackage{titling}
+\pgfplotsset{width=8cm,compat=1.9}
+\usepackage{stackengine}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+%\pagenumbering{gobble} 
+\usepackage{amsmath} % add [fleqn] before {amsmath} to left center
+\usepackage{amssymb}
+\usepackage[T1]{fontenc}
+\usepackage{fancybox}
+\usepackage{longtable}
+\usepackage{tikz}
+
+\hfuzz = 100pt
+
+% For heaps
+\tikzset{
+  heap/.style={
+    every node/.style={circle,draw},
+    level 1/.style={sibling distance=30mm},
+    level 2/.style={sibling distance=15mm}
+  }
+}
+
+
+%%% Horizontal Line Command
+\makeatletter
+  \newcommand*\variableheghtrulefill[1][.4\p@]{%
+    \leavevmode
+    \leaders \hrule \@height #1\relax \hfill
+    \null
+  }
+\makeatother
+%%%
+
+%%% Algorithm commands
+\algblock{Input}{EndInput}
+\algnotext{EndInput}
+\algblock{Output}{EndOutput}
+\algnotext{EndOutput}
+\newcommand{\Desc}[2]{\State \makebox[3em][l]{#1}#2}
+%%%
+
+% %%% Header & Footer
+% \fancyhf{}
+% \renewcommand{\footrulewidth}{0.1mm}
+% \fancyhead[L]{Matteo Esposito}
+% \fancyhead[R]{COMP 352-X}
+% \fancyfoot[R]{\thepage}
+
+% \pagestyle{fancy}
+% %%%
+
+% Code formatting
+\def\code#1{\texttt{#1}}
+
+\renewcommand\maketitlehooka{\null\mbox{}\vfill}
+\renewcommand\maketitlehookd{\vfill\null}
+
+\setlength{\abovedisplayskip}{2pt}
+\setlength{\belowdisplayskip}{3pt}
+
+% Custom settings
+\setlength{\parskip}{0.75em}  % Paragraph spacing
+\setcounter{section}{-1} % Page numbers to start on page 1
+\setlength\parindent{0pt} % Remove indenting from entire file
+\def\layersep{2.5cm}
+
+\title{
+{STAT 497 - Final Project} \\
+{\large Concordia University} \\
+}
+\date{}
+
+%--------------------------------------------------------------------------%
+
+\begin{document}
+
+\begin{titlingpage}
+  \maketitle
+  \centering
+  \vfill
+  {\large{Bakr Abbas, Matthew Liu, Frederic Siino}} \par
+  {\large{Day Month Year}}
+\end{titlingpage}
+
+\newpage
+
+\section{Introduction}
+Introduction goes here
+
+\section{Problem description}
+Problem description goes here
+
+\section{Analyses}
+Analysis goes here
+
+\subsection{Method 1}
+Analysis of method 1
+\subsection{Method 2}
+Analysis of method 2
+
+\section{Conclusion}
+Conclusion goes here
+
+\section{References}
+References go here
+
+\end{document}
+
