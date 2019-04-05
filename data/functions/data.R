@@ -10,6 +10,8 @@ require("lubridate")
 
 # All relevant params
 currency_vec = c("ETH","XRP","XMR","LTC")
+coin.names=c("BTC","ETH","XRP","XMR","LTC")
+coin.colours=c("blue","red","green","black","violet")
 params <- list("start"=toString(as.numeric(as.POSIXct("2017-05-01 4:00:00"))),
                     "end"=toString(as.numeric(as.POSIXct("2019-05-01 4:00:00"))),
                     "period"="7200")

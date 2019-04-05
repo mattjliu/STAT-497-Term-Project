@@ -122,3 +122,8 @@ get_update_all_bandits <- function(Rt,Rmat,Ht,alpha){
     }
     return(Ht)
 }
+
+get_ytd_return=function(data){
+  data=as.matrix(data)
+  return(data[nrow(data),]/data[1,])
+}

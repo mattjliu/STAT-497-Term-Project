@@ -27,8 +27,12 @@ simulate_random(10,100)
 
 # simulate contextual 1
 print("Simulate contextual version 1")
-simulate_contextual1(5,100,0.3,10,0.8)
+ctxt1 <- simulate_contextual1(5,nrow(close),0.3,10,0.8)
 
 # simulate contextual 2
 print("simulate contextual version 2")
-simulate_contextual2(5,100,0.6,10,0.8)
+ctxt2 <- simulate_contextual2(5,nrow(close),0.05,10,0.8)
+
+# simulate contextual 3
+print("simulate contextual version 3")
+ctxt3 <- simulate_contextual3(5,nrow(close),0.8,10,0.8,0.5)
