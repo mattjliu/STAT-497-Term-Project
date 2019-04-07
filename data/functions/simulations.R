@@ -37,14 +37,6 @@ simulate_random <- function(n_hist,n_episodes){
     print(paste("average returns for this simulation: ", returns))
 }
 
-# Function that gives actions table for n samples and n_curren currencies
-get_actions_table <- function(n_samples,n_curren,state_vec){
-    action_mat <- matrix(NA,nrow=n_samples,ncol=n_curren+1)
-    for(i in 1:n_samples)
-        action_mat[i,] <- random_action(n_curren)
-    return(action_mat)
-}
-
 # Simulation function where the agent randomly samples actions at each step and observes next rewards
 simulate_samples <- function(n_samples,n_episodes){
     price <- head(close,2) # initializes the price dataframe as the first 2 price vectors
@@ -244,7 +236,7 @@ simulate_contextual2 <- function(n_curren,n_steps,alpha,window_size,discount){
   Rvec_random <- c()
   Rvec_market <- c()
   market_average <- rep(1/5,5)
-  Rmat <- matrix(0,nrow=1,ncol=n_curren)
+  R_all <- c(0)
 
   for(i in window_size:n_steps){
     # get price dataframe of current time step
@@ -276,15 +268,23 @@ simulate_contextual2 <- function(n_curren,n_steps,alpha,window_size,discount){
       Rvec_bandits <- c(Rvec_bandits,log(yt[a]))
     
     # update preference vector
-    Ht <- get_update_all_bandits(Rvec_bandits,Rmat,Ht,alpha)
-
+    Ht <- get_update_all_bandits(Rvec_bandits,R_all,Ht,alpha)
     
     # check if we are at first timestep, and if so, initialize Rmat, else append to Rmat
+#     if(i == window_size)
+#       Rmat <-  matrix(Rvec_bandits,nrow=1,ncol=n_curren)
+#     else
+#       Rmat <- rbind(Rmat,Rvec_bandits)
+      
+    # check if we are at first timestep, and if so, initialize R_all vector, else append to vector
     if(i == window_size)
-      Rmat <-  matrix(Rvec_bandits,nrow=1,ncol=n_curren)
+        R_all <-  Rvec_bandits
     else
-      Rmat <- rbind(Rmat,Rvec_bandits)
-    
+        R_all <- c(R_all,Rvec_bandits)
+      
+    # Append to R_all vector
+    R_all <- c(R_all,Rvec_bandits)
+      
     # Reward for random action
     Rvec_random <- c(Rvec_random,exp(getLogReturns(yt,random_action(4))))
     

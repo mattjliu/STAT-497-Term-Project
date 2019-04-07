@@ -79,20 +79,30 @@ simulate_random <- function(n_hist,n_episodes){
     print(paste("average returns for this simulation: ", returns))
 }
 
+# Function that gives actions table for n samples and n_curren currencies
+get_actions_table <- function(n_samples,n_curren,state_vec){
+    action_mat <- matrix(NA,nrow=n_samples,ncol=n_curren+1)
+    for(i in 1:n_samples)
+        action_mat[i,] <- random_action(n_curren)
+    return(action_mat)
+}
+
 # generates random action (portfolio vector)
-# params: number of assets in portfolio
+# params: n_assets = number of assets in portfolio
 random_action <- function(n_assets){
     x <- runif(n_assets+1)
     return(x/sum(x))
 }
 
 # Returns the softmax for a given action in preference vector Ht
+# params: a = action taken, Ht = preference function vector at time t
 get_softmax <- function(a,Ht){
     if(sum(exp(Ht)) == 0) return(0)
     return(exp(Ht[a]) / sum(exp(Ht)))
 }
 
 # Does gradient ascent on expected reward and returns updated preference vector
+# params: Rt = reward at time t, Rvec = vector of all previous rewards, Ht = preference vector, a = action taken, alpha = learning step size
 get_update <- function(Rt,Rvec,Ht,a,alpha){
     
     pi_t <- get_softmax(a,Ht)
@@ -112,17 +122,21 @@ get_update <- function(Rt,Rvec,Ht,a,alpha){
     return(Ht)
 }
 
-get_update_all_bandits <- function(Rt,Rmat,Ht,alpha){
+# Does gradient ascent as if all arms are pulled. This is used for contextual version 2
+# params: Rt = reward vector at time t (of all arms), R_all = history vector of all previous rewards, 
+# Ht = preference function vector at time t, alpha = learning step size
+get_update_all_bandits <- function(Rt,R_all,Ht,alpha){
     
     for(a in 1:length(Ht)){
-        mean_r_vec <- mean(Rmat[,a])
         pi_t <- get_softmax(a,Ht)
 
-    Ht[a] <- Ht[a] + alpha * (Rt[a] - mean_r_vec) * (1 - pi_t)
+    Ht[a] <- Ht[a] + alpha * (Rt[a] - mean(R_all)) * (1 - pi_t)
     }
     return(Ht)
 }
 
+# Gets year to date returns of each asset in data matrix
+# params: data = data matrix
 get_ytd_return=function(data){
   data=as.matrix(data)
   return(data[nrow(data),]/data[1,])
