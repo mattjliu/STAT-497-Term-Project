@@ -144,14 +144,14 @@ Analysis goes here
 Method 1 is an ad-hoc method based on the contextual bandits problem. The portfolio optimization problem is reframed as a k-armed bandits problem where we have one arm for each asset in the portfolio (including cash). The action preference method is used, where 
 $$H_t(a), \; a = 1,...,k$$
 are the action preferences for all k assets. However, a slight modification is done when defining actions and updating the preference functions. When computing probabilities of chosing a given action, we define $\pi_t (a)$ in the standard way, i.e.
-$$\pi_t (a) := Pr[A_t=a | R_1,...,R_{t-1}] = \frac{e^{H_t(a) S_{a,t}}}{\sum_{b=1}^{k} e^{H_t(b) S_{b,t}}}$$
+$$\pi_t (a) := Pr[A_t=a | R_1,...,R_{t-1}] = \frac{e^{H_t(a) S_{a,t}}}{\sum_{b=1}^{k} e^{H_t(b) S_{b,t}}}, \; a=1,...,k$$
 where the previously defined state vector $S_t$ is included due to the contextual nature of the problem. The $n$-size history of discounted price changes represented by $S_t$ will thus change the preferences of each asset based on whether or not their prices are observed to have declined or increased in the past $n$ periods (uptrends increase preference, and downtrends decrease preference). Following the standard contextual bandits framework, this leads to the action at time $t$ of
 $$A_t = \argmax_a \pi_t(a)$$
 In the form of a portfolio weight vector, $A_t = w_t$ is a $k$-length vector where the $A_t$th co-ordinate is 1 and all other co-ordinates are 0. This means that rewards are
 $$R_{t+1} := y_{t+1} \cdot A_t = y_{t+1,A_t}$$
 i.e., the relative price change of asset $A_t$. The problem then reduces to a simple contextual bandits problem where one and only one arm is pulled by the agent at each time steps. \par
 However, in the ad-hoc method the actual action taken by the agent at time $t$ is the vector of preference values, i.e. 
-$$A_t' = (H_t(1),H_t(2),...,H_t(k))$$ 
+$$A_t' = (H_t(1),H_t(2),...,H_t(k))^T$$ 
 Since all $H_t(k)$'s sum to 1, this is a valid portfolio weight vector, and we can set $A_t' = w_t$. The rewards are then computed as 
 $$R_{t+1}' :=  y_{t+1} \cdot A_t'$$
 and the preference functions are updated based on $R_t'$ as follows:
@@ -174,6 +174,33 @@ The function used to simulate a single episode of method 1 is \code{simulate\_co
 
 \subsection{Method 2}
 Analysis of method 2
+
+\subsection{Method 3}
+Method 3 (dubbed the "all-or-nothing" method" is the original contextual bandits with action preference function method outlined in the section for method 1. We use the softmax and the previously defined state vector $S_t$ to form our action probabilities
+$$\pi_t (a) := Pr[A_t=a | R_1,...,R_{t-1}] = \frac{e^{H_t(a) S_{a,t}}}{\sum_{b=1}^{k} e^{H_t(b) S_{b,t}}}, \; a=1,...,k$$
+The action taken by the agent is then
+$$A_t = \argmax_a \pi_t(a)$$
+More formally, when computing the reward, the action $A_t$ becomes the standard basis vector $w_t$ where 
+$$w_t = e_{A_t}$$
+and the vectors $e$ are defined as 
+$$e_1 := (1,0,0,0,0)^T, \; e_2 := (0,1,0,0,0)^T, \; e_3 := (0,0,1,0,0)^T, \; e_4 := (0,0,0,1,0)^T, e_5 := (0,0,0,0,1)^T$$
+when $k=5$.
+This leads to the aforementioned definition of the reward,
+$$R_{t+1} := y_{t+1} \cdot A_t = y_{t+1,A_t}$$
+which is the relative price change of asset $A_t$ and the preference can now be correctly updated as 
+$$H_{t+1}(A_t) = H_t(A_t) + \alpha (R_t - \bar{R_t})(a - \pi_t(A_t))$$ 
+$$H_{t+1}(a) = H_t(a) - \alpha (R_t - \bar{R_t})\pi_t(a), \; a \neq A_t$$ \\
+The all-or-nothing method is essentially the simplest algorithm for tackling the portfolio optimization problem, since it is equivalent to the k-armed contextual bandits framework where we can assume rewards for each arm are non-stationary and we only pull one and one arm only at each time step. In practice, this means that the agent reallocates all the capital of the portfolio into one currency during each trading period based on its preference function, which can lead to extremely volatile rewards as well as large transaction costs (if such fees were considered). In addition, since the we assume non-stationarity, an epsilon greedy option is available (and recommended).
+
+The function used to simulate a single episode of method 3 is \code{simulate\_contextual3} and the parameters are as follows:
+\begin{itemize}
+  \item \code{n\_curren}: The number of currencies in the problem including cash (5 for this project)
+  \item \code{n\_steps}: The number of timesteps $T$ in the episode. To use all available data set \code{n\_steps = nrow(data)}
+  \item \code{alpha}: Learning rate $\alpha$ when updating action preference function (as defined above)
+  \item \code{window\_size}: Size of historic prices to consider when computing $S_t$ (\code{window\_size} corresponds to the value of $n$)
+  \item \code{discount}: Discount factor of previous relative price changes when computing $S_t$ (\code{discount} corresponds to the value of $\gamma$)
+  \item \code{epsilon}: $\epsilon$ value (for epsilon greedy)
+\end{itemize}
 
 \section{Conclusion}
 Conclusion goes here
