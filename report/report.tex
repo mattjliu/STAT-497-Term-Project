@@ -137,10 +137,12 @@ For the sake of simplicity, an additional assumption that there are no transacti
 
 Lastly, since we let the agent run through all the available data when conducting an experiment, the problem becomes an episodic task where $t=0,...,T$ and $T$ is the number of trading periods in our data set. In practice however, the problem is a continuing task since the agent is tasked to a manage a portfolio forever.
 
-\section{Analyses}
+\section{Implementations and Analyses}
 Analysis goes here
 
 \subsection{Method 1}
+
+\subsubsection{Implementation}
 Method 1 is an ad-hoc method based on the contextual bandits problem. The portfolio optimization problem is reframed as a k-armed bandits problem where we have one arm for each asset in the portfolio (including cash). The action preference method is used, where 
 $$H_t(a), \; a = 1,...,k$$
 are the action preferences for all k assets. However, a slight modification is done when defining actions and updating the preference functions. When computing probabilities of chosing a given action, we define $\pi_t (a)$ in the standard way, i.e.
@@ -170,12 +172,21 @@ The function used to simulate a single episode of method 1 is \code{simulate\_co
   \item \code{discount}: Discount factor of previous relative price changes when computing $S_t$ (\code{discount} corresponds to the value of $\gamma$)
 \end{itemize}
 
+\subsubsection{Analysis}
+Analysis of method 1
 
 
 \subsection{Method 2}
+
+\subsubsection{Implementation}
+Implementation of method 2
+
+\subsubsection{Analysis}
 Analysis of method 2
 
 \subsection{Method 3}
+
+\subsubsection{Implementation}
 Method 3 (dubbed the "all-or-nothing" method" is the original contextual bandits with action preference function method outlined in the section for method 1. We use the softmax and the previously defined state vector $S_t$ to form our action probabilities
 $$\pi_t (a) := Pr[A_t=a | R_1,...,R_{t-1}] = \frac{e^{H_t(a) S_{a,t}}}{\sum_{b=1}^{k} e^{H_t(b) S_{b,t}}}, \; a=1,...,k$$
 The action taken by the agent is then
@@ -201,6 +212,9 @@ The function used to simulate a single episode of method 3 is \code{simulate\_co
   \item \code{discount}: Discount factor of previous relative price changes when computing $S_t$ (\code{discount} corresponds to the value of $\gamma$)
   \item \code{epsilon}: $\epsilon$ value (for epsilon greedy)
 \end{itemize}
+
+\subsubsection{Analysis}
+Analysis of method 3
 
 \section{Conclusion}
 Conclusion goes here
