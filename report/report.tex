@@ -20,6 +20,8 @@
 \usepackage{fancybox}
 \usepackage{longtable}
 \usepackage{tikz}
+\usepackage{subcaption}
+\usepackage{chngcntr}
 
 
 \DeclareMathOperator*{\argmax}{arg\,max}
@@ -118,17 +120,29 @@ In this project, the environment is solely dictated by the data of the historic 
 \end{itemize}
 
 This means that the sequence of states and transition probabilities are already predefined based on the data at hand. In particular, we define a price relative vector $y_t$ of the $t$th trading period like Jiang, Xu and Liang, namely:
-$$y_t := v_t \oslash v_{t-1} = \bigg(1,\frac{v_{2,t}}{v_{2,t-1}}, …,\frac{v_{m-1,t}}{v_{m-1,t-1}}, \frac{v_{m,t}}{v_{m,t-1}}\bigg)^T$$ 
+\begin{equation}
+y_t := v_t \oslash v_{t-1} = \bigg(1,\frac{v_{2,t}}{v_{2,t-1}}, …,\frac{v_{m-1,t}}{v_{m-1,t-1}}, \frac{v_{m,t}}{v_{m,t-1}}\bigg)^T
+\end{equation}
 where $v_{t,i}$ denotes the closing price of the $i$th asset in the $t$th trading period. Note here that asset 1 and thus $v_{t,1}$ is always equal to 1. This is because the relative prices $v_{t,i}$ are relative to the first asset (in our case, BTC), also known as the cash. This price relative vector can then be used to calculate the reward, defined in general as 
-$$r_t = y_t \cdot w_{t-1}$$
-where $w_{t-1}$ is the portfolio weight vector at time $t-1$. This reward is effectively the change in portfolio value for period $t$. The action $a_t$ at time $t$ is the portfolio weight vector $w_t$, where the $i$th element is the proportion of asset $i$ in the portfolio. The goal of the agent is then to maximize the growth rate (or cumulative return) $r_t$ of the portfolio over the experimental time frame. \\
+\begin{equation}
+r_t = y_t \cdot w_{t-1}
+\end{equation}
+where $w_{t-1}$ is the portfolio weight vector at time $t-1$. This reward is effectively the change in portfolio value for period $t$. The action $a_t$ at time $t$ is the portfolio weight vector $w_t$, where the $i$th element is the proportion of asset $i$ in the portfolio.
+\begin{equation}
+a_t := w_t
+\end{equation}
+The goal of the agent is then to maximize the growth rate (or cumulative return) $r_t$ of the portfolio over the experimental time frame. \\
 
 In addition, we also define a state vector $S_T := (s_{1,T},...,s_{m,T})$ where $s_{i,T}$ denotes the state of the previous price changes of asset $i$ at time $T$. Namely,
-$$s_{i,T} = \sum_{t=T-n}^{t=T} \gamma^t y_{i,t}$$ 
+\begin{equation}
+s_{i,T} = \sum_{t=T-n}^{t=T} \gamma^t y_{i,t}
+\end{equation}
 where $y_{i,t}$ is the $i$th element of the previously defined price relative vector $y_t$, $\gamma$ is a discount factor and $n$ is the size of the history we consider. As such the state is a vector of $n$-step backward relative price changes for each asset discounted by a rate gamma. \\
 
 Thus, based on the environment and problem definition, we have 
-$$p(s_{t+1} | s_t,a) := Pr[S_{t+1}=s_{t+1} | S_t=s_t,A_t=a] = 1 \; \forall a \in A$$
+\begin{equation}
+p(s_{t+1} | s_t,a) := Pr[S_{t+1}=s_{t+1} | S_t=s_t,A_t=a] = 1 \; \forall a \in A
+\end{equation}
 for the deterministic sequence of states
 $$S_1,S_1,...,S_{T-n}$$
 which follows since the sequence $y_1,y_2,...,y_T$ is determined by the data. \\
@@ -146,24 +160,40 @@ Analysis goes here
 Method 1 is an ad-hoc method based on the contextual bandits problem. The portfolio allocation optimization problem is reframed as a k-armed bandits problem where we have one arm for each asset in the portfolio (including cash). The action preference method is used, where 
 $$H_t(a), \; a = 1,...,k$$
 are the action preferences for all k assets. However, a slight modification is done when defining actions and updating the preference functions. When computing probabilities of chosing a given action, we define $\pi_t(a|S_t)$ as
-$$\pi_t (a|S_t) := Pr[A_t=a | S_t,R_1,...,R_{t-1}] = \frac{e^{H_t(a) S_{a,t}}}{\sum_{b=1}^{k} e^{H_t(b) S_{b,t}}}, \; a=1,...,k$$
-where the previously defined state vector $S_t$ is included due to the contextual nature of the problem. The $n$-size history of discounted price changes represented by $S_t$ will thus change the probabilities of each asset based on whether or not their prices are observed to have declined or increased in the past $n$ periods (uptrends increase preference, and downtrends decrease preference). Following the standard contextual bandits framework, this leads to the action at time $t$ of
-$$A_t = \argmax_a \pi_t(a|S_t)$$
+\begin{equation}
+\pi_t (a|S_t) := Pr[A_t=a | S_t,R_1,...,R_{t-1}] = \frac{e^{H_t(a) S_{a,t}}}{\sum_{b=1}^{k} e^{H_t(b) S_{b,t}}}, \; a=1,...,k
+\end{equation}
+where the previously defined state vector $S_t$ from equation (4) is included due to the contextual nature of the problem. The $n$-size history of discounted price changes represented by $S_t$ will thus change the probabilities of each asset based on whether or not their prices are observed to have declined or increased in the past $n$ periods (uptrends increase preference, and downtrends decrease preference). Following the standard contextual bandits framework, this leads to the action at time $t$ of
+\begin{equation}
+A_t = \argmax_a \pi_t(a|S_t)
+\end{equation}
 In the form of a portfolio weight vector, $A_t = w_t$ is a $k$-length vector where the $A_t$th co-ordinate is 1 and all other co-ordinates are 0. This means that rewards are
-$$R_{t+1} := y_{t+1} \cdot A_t = y_{t+1,A_t}$$
+\begin{equation}
+R_{t+1} := y_{t+1} \cdot A_t = y_{t+1,A_t}
+\end{equation}
 i.e., the relative price change of asset $A_t$. The problem then reduces to a simple contextual bandits problem where one and only one arm is pulled by the agent at each time steps. \par
 However, in the ad-hoc method the actual action taken by the agent at time $t$ is the vector of contextual preference values, i.e. 
-$$A_t' = (\pi_t(1|S_t),\pi_t(2|S_t),...,\pi_t(k|S_t))^T$$ 
+\begin{equation}
+A_t' = (\pi_t(1|S_t),\pi_t(2|S_t),...,\pi_t(k|S_t))^T
+\end{equation}
 Since all $\pi_t(k|S_t)$'s sum to 1, this is a valid portfolio weight vector, and we can set $A_t' = w_t$. The rewards are then computed as 
-$$R_{t+1}' :=  y_{t+1} \cdot A_t'$$
+\begin{equation}
+R_{t+1}' :=  y_{t+1} \cdot A_t'
+\end{equation}
 and the preference functions are updated based on $R_t'$ as follows:
-$$H_{t+1}(A_t) = H_t(A_t) + \alpha (R_t' - \bar{R_t})(1 - \pi_t(A_t))$$ 
-$$H_{t+1}(a) = H_t(a) - \alpha (R_t' - \bar{R_t})\pi_t(a), \; a \neq A_t$$
+\begin{equation}
+H_{t+1}(A_t) = H_t(A_t) + \alpha (R_t' - \bar{R_t})(1 - \pi_t(A_t))
+\end{equation}
+\begin{equation}
+H_{t+1}(a) = H_t(a) - \alpha (R_t' - \bar{R_t})\pi_t(a), \; a \neq A_t
+\end{equation}
 where $\pi_t(a)$ represents the non-contextual policy 
-$$\pi_t (a) := Pr[A_t=a | R_1,...,R_{t-1}] = \frac{e^{H_t(a)}}{\sum_{b=1}^{k} e^{H_t(b)}}, \; a=1,...,k$$ \\
+\begin{equation}
+\pi_t (a) := Pr[A_t=a | R_1,...,R_{t-1}] = \frac{e^{H_t(a)}}{\sum_{b=1}^{k} e^{H_t(b)}}, \; a=1,...,k
+\end{equation} \\
 Intuitively, this method relies on the simplfying assumption that rewards produced by actions $A_t'$ is a good enough approximation of rewards produced by actions $A_t$. In other words, 
 $$E[R_t' | S_t] \approx E[R_t | S_t]$$
-In reality however, we can predict that this is far from the case (hence the ad-hoc nature of this method). It is safe to assume that computing the returns of a preference vector of assets is not the same as computing the total one-step return of the single most preferred asset. Nevertheless, the ad-hoc method provides a straightforward way to implement an algorithm learning to optimize a portfolio of assets since the softmax produces valid actions that represent the preference of the agent at time $t$ based on $S_t$. However, the actual rewards used to update the preference function is only a weak approximation of the actual reward $R_t$.
+In reality however, we can predict that this is far from the case (hence the ad-hoc nature of this method). It is safe to assume that computing the returns of a preference vector of assets is not the same as computing the total one-step return of the single most preferred asset. Nevertheless, the ad-hoc method provides a straightforward way to implement an algorithm learning to optimize a portfolio of assets since the softmax produces valid actions that represent the preference of the agent at time $t$ based on $S_t$. However, the actual rewards used to update the preference function is only a weak approximation of the actual reward $R_t$ defined in equation (8).
 
 The function used to simulate a single episode of method 1 is \code{simulate\_contextual1} and the parameters are as follows:
 \begin{itemize}
@@ -176,28 +206,47 @@ The function used to simulate a single episode of method 1 is \code{simulate\_co
 \end{itemize}
 
 \subsubsection{Analysis}
-Analysis of method 1
+Using this ad-hoc method, the agent consistently beats the market returns even when the learning rate and the window size. The reason behind this is due to one of the currencies, XRP, having a very steep increase in value (add footnote to refer to xrp spike). This increase causes a shift in the agent’s preference to heavily to invest more in XRP during this spike. The action preferences for method 1 have a higher variance than method 2, which is noticable visually when looking at the graph of the preferences of each currency. 
 
+A grid search was conducted to find an optimal window size and alpha combination that would result in a higher agent return (add footnote to results). Combinations from alpha values ranging from 0.1 to 0.4, and window sizes ranging from 6 to 12. It was found that the best combination in this range was an alpha of 0.4 \& a window size of 12, as the agent experiences a return of about 137\% while the market return was roughly 85\%. The larger alpha will cause the agent to prefer XRP even more during it’s spike, which is between time step 2000 \& 4000.
+This method does accomplish our main goal, which is to beat the market.
+
+\begin{figure}[h!]
+  \centering
+  \begin{subfigure}[b]{0.4\linewidth}
+    \includegraphics[width=\linewidth]{figures/agt_vs_mkt1.png}
+  \end{subfigure}
+  \begin{subfigure}[b]{0.4\linewidth}
+    \includegraphics[width=\linewidth]{figures/actions1.png}
+  \end{subfigure}
+  \caption{Agent performance and agent actions over time (method 1)}
+  \label{fig:method1}
+\end{figure}
 
 \subsection{Method 2}
 
 \subsubsection{Implementation}
 Method 2 is another preference function method that takes advantage of the fact that actions carried out by our agent do not affect rewards and transition probabilities. As such it is possible to sample many different actions at each timestep and observe rewards that follow had the agent taken that action. \\
-
-Again we define a contextual policy function $\pi_t (a|S_t)$ and a normal policy function $\pi_t (a)$ as
-$$\pi_t (a|S_t) := Pr[A_t=a | S_t,R_1,...,R_{t-1}] = \frac{e^{H_t(a) S_{a,t}}}{\sum_{b=1}^{k} e^{H_t(b) S_{b,t}}}, \; a=1,...,k$$
-$$\pi_t (a) := Pr[A_t=a | R_1,...,R_{t-1}] = \frac{e^{H_t(a)}}{\sum_{b=1}^{k} e^{H_t(b)}}, \; a=1,...,k$$ 
+Again we define a contextual policy function $\pi_t (a|S_t)$ and a normal policy function $\pi_t (a)$ from equations (6) and (13) respectively.
 We also define a new reward vector $R_{t}^{All}$ where
-$$R_{t}^{All} := y_t$$
-and $y_t$ is the previously defined relative price change vector. This is because the price relative vector is a vector of rewards where the $a$th element in $y_t$ is the reward  resulting from the agent investing all its capital into asset $a$. This new reward vector $R_{t}^{All}$ becomes the basis of the action preference updates. In particular, we use a new average reward $\bar{R_t}^{All}$ as
-$$\bar{R_t}^{All} := \frac{1}{5t} \sum_{T=1}^{t} \sum_{a=1}^{5} R_{T,a}^{All}$$
+\begin{equation}
+R_{t}^{All} := y_t
+\end{equation}
+and $y_t$ is the previously defined relative price change vector in (1). This is because the price relative vector is a vector of rewards where the $a$th element in $y_t$ is the reward  resulting from the agent investing all its capital into asset $a$. This new reward vector $R_{t}^{All}$ becomes the basis of the action preference updates. In particular, we use a new average reward $\bar{R_t}^{All}$ as
+\begin{equation}
+\bar{R_t}^{All} := \frac{1}{5t} \sum_{T=1}^{t} \sum_{a=1}^{5} R_{T,a}^{All}
+\end{equation}
 where we sum from $a=1$ to 5 since there are 5 assets in the portfolio and $R_{T,a}^{All}$ denotes the $a$th element of the vector $R_{T}^{All}$. In other words, $\bar{R_t}^{All}$ computes the mean of the concatenation of vectors
-$$(R_1^{All},R_2^{All},...,R_t^{All})^T$$ \\
+\begin{equation}
+(R_1^{All},R_2^{All},...,R_t^{All})^T
+\end{equation} \\
 Intuitively, this means that the average reward $\bar{R_t}^{All}$ becomes the market average at time $t$. We can then update preferences as follows:
-$$H_{t+1}(a) = H_t(a) + \alpha (R_{t,a}^{All} - \bar{R_t}^{All})(1 - \pi_t(a)), \; a = 1,...,5$$
-In other words, the preference for each asset is updated according to the observed reward for that asset and the average of all previous rewards, effectively making the method rely on 5 different independent preference functions that monitor one asset each. Like the ad-hoc method, the action taken by the agent is
+\begin{equation}
+H_{t+1}(a) = H_t(a) + \alpha (R_{t,a}^{All} - \bar{R_t}^{All})(1 - \pi_t(a)), \; a = 1,...,5
+\end{equation}
+In other words, the preference for each asset is updated according to the observed reward for that asset and the average of all previous rewards, effectively making the method rely on 5 different independent preference functions that monitor one asset each. Like the ad-hoc method, the action taken by the agent is the same as in (9),
 $$A_t' = (\pi_t(1|S_t),\pi_t(2|S_t),...,\pi_t(5|S_t))^T$$ 
-and the reward used to measure its performance is
+and the reward used to measure its performance is once again
 $$R_{t+1}' :=  y_{t+1} \cdot A_t'$$ \\
 However, this time, none of the agent rewards $R_{t+1}'$ are used to update the preference functions $H_t(a)$. This means that the update functions for each $H_t(a)$ are valid since the sequence of preference functions 
 $$H_1(a),H_2(a),...,H_t(a)$$
@@ -214,25 +263,45 @@ The function used to simulate a single episode of method 2 is \code{simulate\_co
 \end{itemize}
 
 \subsubsection{Analysis}
-Analysis of method 2
+Using this method the agent follows the market, the returns are slightly below the market but it experiences positive returns (63.8\%). The preferences in method 2 varry a lot less than method 1 since the preferences are updated as if each “arm” was pulled (as opposed to the action being the argmax of the softmax output given the state). The largest increase in preference was observed when XRP had a large spike as discussed previously. But the effects were not as drastic as the previous method since the preferences are updated more uniformly.
+A grid search was once again used to find the optimal parameters as in method one (add reference to grid search results here). In addition, the same range of values were used for alpha and window size. The outcome was that the lowest learning rate would result in the highest return as well as the lowest window size. 
+The main goal of this modeling is to train an agent to beat the market, but in this method it has failed to do so. 
+
+\begin{figure}[h!]
+  \centering
+  \begin{subfigure}[b]{0.4\linewidth}
+    \includegraphics[width=\linewidth]{figures/agt_vs_mkt2.png}
+  \end{subfigure}
+  \begin{subfigure}[b]{0.4\linewidth}
+    \includegraphics[width=\linewidth]{figures/prefs2.png}
+  \end{subfigure}
+  \caption{Agent performance and agent preferences over time (method 2)}
+  \label{fig:method2}
+\end{figure}
 
 \subsection{Method 3}
 
 \subsubsection{Implementation}
-Method 3 (dubbed the "all-or-nothing" method" is the original contextual bandits with action preference function method outlined in the section for method 1. We use the softmax and the previously defined state vector $S_t$ to form our action probabilities
-$$\pi_t (a|S_t) := Pr[A_t=a | S_t,R_1,...,R_{t-1}] = \frac{e^{H_t(a) S_{a,t}}}{\sum_{b=1}^{k} e^{H_t(b) S_{b,t}}}, \; a=1,...,k$$
-The action taken by the agent is then
+Method 3 (dubbed the "all-or-nothing" method" is the original contextual bandits with action preference function method outlined in the section for method 1. We use the softmax and the previously defined state vector $S_t$ to form our action probabilities $\pi_t (a|S_t)$ and $\pi_t (a)$ ((6) and (13)).
+The action taken by the agent is then from (7)
 $$A_t = \argmax_a \pi_t(a|S_t)$$
 More formally, when computing the reward, the action $A_t$ becomes the standard basis vector $w_t$ where 
-$$w_t = e_{A_t}$$
+\begin{equation}
+w_t := e_{A_t}
+\end{equation}
 and the vectors $e$ are defined as 
 $$e_1 := (1,0,0,0,0)^T, \; e_2 := (0,1,0,0,0)^T, \; e_3 := (0,0,1,0,0)^T, \; e_4 := (0,0,0,1,0)^T, e_5 := (0,0,0,0,1)^T$$
-when the number of assets $k=5$.
-This leads to the aforementioned definition of the reward,
+when the number of assets $k=5$. \par
+This leads to the aforementioned definition of the reward (8),
 $$R_{t+1} := y_{t+1} \cdot A_t = y_{t+1,A_t}$$
-which is the relative price change of asset $A_t$ and the preference can now be correctly updated as 
-$$H_{t+1}(A_t) = H_t(A_t) + \alpha (R_t - \bar{R_t})(1 - \pi_t(A_t))$$ 
-$$H_{t+1}(a) = H_t(a) - \alpha (R_t - \bar{R_t})\pi_t(a), \; a \neq A_t$$ \\
+which is the relative price change of asset $A_t$. The preference can now be correctly updated as 
+\begin{equation}
+H_{t+1}(A_t) = H_t(A_t) + \alpha (R_t - \bar{R_t})(1 - \pi_t(A_t))
+\end{equation}
+\begin{equation}
+H_{t+1}(a) = H_t(a) - \alpha (R_t - \bar{R_t})\pi_t(a), \; a \neq A_t
+\end{equation} 
+which differ from (11) and (12) since we are now using the correct observations $R_t$ instead of $R_t'$. \par
 The all-or-nothing method is essentially the simplest algorithm for tackling the portfolio optimization problem, since it is equivalent to the k-armed contextual bandits framework where we can assume rewards for each arm are non-stationary and we only pull one and one arm only at each time step. In practice, this means that the agent reallocates all the capital of the portfolio into one currency during each trading period based on its preference function, which can lead to extremely volatile rewards as well as large transaction costs (if such fees were considered). In addition, since the we assume non-stationarity, an epsilon greedy strategy is asseumed.
 
 The function used to simulate a single episode of method 3 is \code{simulate\_contextual3} and the parameters are as follows:
@@ -246,11 +315,92 @@ The function used to simulate a single episode of method 3 is \code{simulate\_co
   \item \code{data}: data that is used to run experiments
 \end{itemize}
 
+\newpage
+
 \subsubsection{Analysis}
-Analysis of method 3
+This is the only method that will have an element of randomness, as it uses an epsilon greedy approach. In practice the transaction costs involved in this method would be very high when compared to the other method.The “all or nothing” method  experiences the worst returns when compared to the other Contextual Bandit methods. It is the only the method that actually experiences negative returns, but this changes drastically when the seed is changed. The only way this method can perform better is if it is able to identify the currency that will beat the market at each time step, but this is not possible given the simplicity of the model.
+The grid search was not conducted for this method since the seed changes what the returns will be. 
+This method does not perform well. The non-stationary nature of the problem forces the agent to continuously explore, and thus there is no true convergence. 
+
+\begin{figure}[h!]
+  \centering
+  \begin{subfigure}[b]{0.4\linewidth}
+    \includegraphics[width=\linewidth]{figures/agt_vs_mkt3.png}
+  \end{subfigure}
+  \begin{subfigure}[b]{0.4\linewidth}
+    \includegraphics[width=\linewidth]{figures/prefs3.png}
+  \end{subfigure}
+  \caption{Agent performance and agent preferences over time (method 3)}
+  \label{fig:method3}
+\end{figure}
+
+\subsubsection{Contextual bandits comparison}
+When comparing all contextual bandits methods, it can be seen that the ad-hoc method beats all the other methods as well as outperforming the market. As discussed earlier this is mainly due to the spike in XRP and how the agent decides to heavily invest in it. When only using the data past the spike, the returns from all the methods are very close to each other. It should be noted that method 3 should not be compared it’s previous return since there is randomness and the agent would not make the same decisions it made initially. Method 1 is almost invisible since it has almost the same returns as the market.
+
+\begin{figure}[h!]
+  \centering
+  \begin{subfigure}[b]{0.4\linewidth}
+    \includegraphics[width=\linewidth]{figures/returns.png}
+  \end{subfigure}
+  \begin{subfigure}[b]{0.4\linewidth}
+    \includegraphics[width=\linewidth]{figures/returns_no_spike.png}
+  \end{subfigure}
+  \caption{Comparison of performance of first 3 methods (with and without spike)}
+  \label{fig:comparison}
+\end{figure}
+
+\subsection{Method 4}
+
+\subsubsection{Implementation}
+Similarly to method 1, method 4 is also an ad hoc method based on policy gradient method. The portfolio allocation problem is framed as a k-armed bandits problem where the actions are the five cryptocurrencies (including cash). The difference in the two methods comes from the way the action preference is updated.  With the policy gradient method the objective is to optimize the preference function. It is defined as a function of some parameters $\theta$. The probability of selecting any action for each state and the transition probability thus also depends on $\theta$. Our implementation closely follows that of Sutton and Barto (add reference here). More specifically, we have
+\begin{equation}
+\pi_t (a|s,\theta)  = \frac{e^{h(s,a,\theta)}}{\sum_{b=1}^{5} e^{h(s,b,\theta)}}, \; a=1,...,5
+\end{equation}
+\begin{equation}
+h(s,a,\theta) = \theta^T x(s,a)
+\end{equation}
+where $\pi$ denotes once again the preference probabilities and $h$ denotes the preference function. Here the preferences are linear in features ($x(s,a)$ is a diagonal matrix). The parameters $\theta$ are also stored in a vector
+\begin{equation}
+\theta := (\theta_1,...,\theta_5)^T
+\end{equation}
+The parameters are continuously updated and it affects the action selection and the distribution of the states which complicates the calculation of the gradient ascent. There exist a theorem that states that the gradient ascent can be approximated analytically. This theorem allows the calculation of the sample gradient ascent without taking the derivative of the state distribution. This approximation is only proportional to the true value and the learning step size $\alpha$ will have to take into account this constant of proportionality as well. The values of $\theta$ are then updated in the following way:
+\begin{equation}
+\theta_{t+1} = \theta_t + \alpha G_t \frac{\nabla \pi(A_t | S_t,\theta_t)}{\pi(A_t | S_t,\theta_t)}
+\end{equation}
+where $S_t$ is simply the previous period return and $G_t$ is the current return (i.e. it is a myopic approach to the problem). Note also that 
+\begin{equation}
+\frac{\nabla \pi(A_t | S_t,\theta_t)}{\pi(A_t | S_t,\theta_t)} = \nabla \pi(A_t|S_t,\theta)
+\end{equation} \\
+In theory, the agent's action is to put all of the money in the stock with the maximum return. Therefore, $A_t$ and $R_{t+1}$ should be defined as in equations (7) and (8) respectively. However, what the agent truly does is rebalance the portfolio according to the preference function $\pi(a,\theta)$ to obtain
+\begin{equation}
+R_{t+1}' = y_{t+1} \cdot (\pi(1,\theta),\pi(2,\theta),\pi(3,\theta),\pi(4,\theta),\pi(5,\theta))^T 
+\end{equation}
+thus making this an ad hoc method akin to method 1. Method 4 is therefore an alternative implementation of method 1, where the agent behaves myopically. We rely again on the simplifying assumption that 
+$$E[R_t] \approx E[R_t']$$
+and we can expect results to be similar to a myopic implementation of method 1.
+
+The function used to simulate a sing episode of method 4 is \code{xxx} and the parameters are as follows:
+
+\subsubsection{Analysis}
+Intuitively, it is not safe to make the assumption that $E[R_t] \approx E[R_{t+1}]$ since the action of the agent is different. The results are however encouraging. For episodes with 200 periods the agent beats the market about 63\% of the time. Interestingly, the step size made no difference in the percentage of time the agent beats the market. One could conclude that the learning step size makes does not matter, but clearly by looking at the graph comparing the market return and the various step size, it is safe to conclude that the learning step size matters. The weights of each cryptocurrency in the portfolio varied a lot more when there was a smaller learning step, thus there was a difference in the return. \par
+The timing at which the episode make a big difference in the performance of the agent. The agent seems to be performing much better when the episodes starts after the spike. \par
+As expected the agent performs a lot better when the learning step size is smaller (i.e. the agent adapts faster to the change in the market). The fact that the agent mimics pretty closely what the market does is also not surprising since the gradient re-adjust the weights of the currencies depending on the direction the market is taking. The portfolio unexpectedly falls well below the baseline value (i.e. Bitcoin). One would expect the agent to reallocate the cash towards the "safe" choice. The baseline with a constant return of zero is the best choice in this case. From the graph below there is no increase in the bitcoin preference. One way to interpret this is to think that the agent would rather go towards something more volatile since there is more chance of a higher return. It is a major drawback of this method because high risk can lead to high return but to substantial losses as well. However, the biggest drawback of this method is obviously its lack of mathematical foundation. It is not mathematically sound.
 
 \section{Conclusion}
 Conclusion goes here
+
+\section{Appendix}
+\appendix
+\counterwithin{figure}{section}
+
+\section{Figures}
+
+\begin{figure}[htp]
+  \centering
+  \includegraphics[scale=0.7]{figures/xrp.png}
+  \caption{Observed spike in XRP}
+  \label{xrp}
+\end{figure}
 
 \section{References}
 References go here
