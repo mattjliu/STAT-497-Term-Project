@@ -395,7 +395,7 @@ thus making this an ad hoc method akin to method 1. Method 4 is therefore an alt
 $$E[R_t] \approx E[R_t']$$
 and we can expect results to be similar to a myopic implementation of method 1.
 
-The function used to simulate a sing episode of method 4 is \code{xxx} and the parameters are as follows:
+The function used to simulate a sing episode of method 4 is \code{GradPolControl} and the parameters are as follows:
 
 \subsubsection{Analysis}
 Intuitively, it is not safe to make the assumption that $E[R_t] \approx E[R_{t+1}]$ since the action of the agent is different. The results are however encouraging. For episodes with 200 periods the agent beats the market about 63\% of the time. Interestingly, the step size made no difference in the percentage of time the agent beats the market. One could conclude that the learning step size makes does not matter, but clearly by looking at the graph comparing the market return and the various step size, it is safe to conclude that the learning step size matters. The weights of each cryptocurrency in the portfolio varied a lot more when there was a smaller learning step, thus there was a difference in the return. \par
