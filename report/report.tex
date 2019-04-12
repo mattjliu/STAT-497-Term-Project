@@ -102,6 +102,23 @@
 
 \newpage
 
+\section{To do list}
+
+\begin{itemize}
+  \item Add footnotes
+  \item Add links (to Jiang et al. and Sutton and Barto)
+  \item Add references
+  \item Add grid search results
+  \item Add figures for policy gradient analysis
+  \item Add function description for policy gradient
+  \item Add conclusion
+  \item Determine if extra analysis should be added
+  \item Add table of contents
+  \item Review report
+\end{itemize}
+
+\newpage
+
 \section{Introduction}
 One of the main challenges of managing a portfolio or a fund, is the decision process of how to allocate investment resources to each assets. The goal is to maximize returns but also to diversify, putting all the fund in the most profitable asset could be beneficial in the short run, but the possibility of that one asset crashing in value is larger than the possibility of multiple assets crashing in value. So diversifying is important to hedge against that outcome, and portfolio management in the modern day involves more automation than ever. Reinforcement \& Deep learning methods are being used to optimize this decision making process. \\
 
@@ -152,7 +169,6 @@ For the sake of simplicity, an additional assumption that there are no transacti
 Lastly, since we let the agent run through all the available data when conducting an experiment, the problem becomes an episodic task where $t=1,...,T-n$ and $T$ is the number of trading periods in our data set. Note here that $t$ ends at $t=T-n$ since the window of the first $n$ price changes needs to be considered as the starting state $S_1$, therefore reducing the number of states from $T$ to $T-n$. In practice however, the problem is a continuing task since the agent is tasked to a manage a portfolio forever.
 
 \section{Implementations and Analyses}
-Analysis goes here
 
 \subsection{Method 1}
 
