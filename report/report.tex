@@ -333,7 +333,7 @@ The function used to simulate a single episode of method 3 is \code{simulate\_co
 
 \subsubsection{Analysis}
 This is the only method that will have an element of randomness, as it uses an epsilon greedy approach. In practice the transaction costs involved in this method would be very high when compared to the other method.The “all or nothing” method  experiences the worst returns when compared to the other Contextual Bandit methods. It is the only the method that actually experiences negative returns, but this changes drastically when the seed is changed. The only way this method can perform better is if it is able to identify the currency that will beat the market at each time step, but this is not possible given the simplicity of the model.
-The grid search was not conducted for this method since the seed changes what the returns will be. 
+The grid search was not conducted for this method since the seed changes what the returns will be. Setting a seed that will return the highest return would only make the model look better than it actually is.
 This method does not perform well. The non-stationary nature of the problem forces the agent to continuously explore, and thus there is no true convergence. 
 
 \begin{figure}[h!]
@@ -349,7 +349,7 @@ This method does not perform well. The non-stationary nature of the problem forc
 \end{figure}
 
 \subsubsection{Contextual bandits comparison}
-When comparing all contextual bandits methods, it can be seen that the ad-hoc method beats all the other methods as well as outperforming the market. As discussed earlier this is mainly due to the spike in XRP and how the agent decides to heavily invest in it. When only using the data past the spike, the returns from all the methods are very close to each other. It should be noted that method 3 should not be compared it’s previous return since there is randomness and the agent would not make the same decisions it made initially. Method 1 is almost invisible since it has almost the same returns as the market.
+When comparing all contextual bandits methods, it can be seen that the ad-hoc method beats all the other methods and it outperforms the market. All discussed earlier this is mainly due to the spike in XRP and how the agent decides to heavily invest in it. When only using the data past the spike, the returns from all the methods are very close to each other. This is because method 1 does not shift the weights of the portfolio to XRP as it did earlier,so it did not take advantage of the spike.It should be noted that method 3 should not be compared it’s previous return since there is randomness and the agent would not make the same decisions it made initially.Method one is almost invisible since it has almost the same returns as the market. 
 
 \begin{figure}[h!]
   \centering
