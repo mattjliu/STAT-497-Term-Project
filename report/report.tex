@@ -333,7 +333,7 @@ The function used to simulate a single episode of method 3 is \code{simulate\_co
 
 \subsubsection{Analysis}
 This is the only method that will have an element of randomness, as it uses an epsilon greedy approach. In practice the transaction costs involved in this method would be very high when compared to the other method.The “all or nothing” method  experiences the worst returns when compared to the other Contextual Bandit methods. It is the only the method that actually experiences negative returns, but this changes drastically when the seed is changed. The only way this method can perform better is if it is able to identify the currency that will beat the market at each time step, but this is not possible given the simplicity of the model.
-The grid search was not conducted for this method since the seed changes what the returns will be. 
+The grid search was not conducted for this method since the seed changes what the returns will be. Setting a seed that will return the highest return would only make the model look better than it actually is.
 This method does not perform well. The non-stationary nature of the problem forces the agent to continuously explore, and thus there is no true convergence. 
 
 \begin{figure}[h!]
@@ -349,7 +349,7 @@ This method does not perform well. The non-stationary nature of the problem forc
 \end{figure}
 
 \subsubsection{Contextual bandits comparison}
-When comparing all contextual bandits methods, it can be seen that the ad-hoc method beats all the other methods as well as outperforming the market. As discussed earlier this is mainly due to the spike in XRP and how the agent decides to heavily invest in it. When only using the data past the spike, the returns from all the methods are very close to each other. It should be noted that method 3 should not be compared it’s previous return since there is randomness and the agent would not make the same decisions it made initially. Method 1 is almost invisible since it has almost the same returns as the market.
+When comparing all contextual bandits methods, it can be seen that the ad-hoc method beats all the other methods and it outperforms the market. All discussed earlier this is mainly due to the spike in XRP and how the agent decides to heavily invest in it. When only using the data past the spike, the returns from all the methods are very close to each other. This is because method 1 does not shift the weights of the portfolio to XRP as it did earlier,so it did not take advantage of the spike.It should be noted that method 3 should not be compared it’s previous return since there is randomness and the agent would not make the same decisions it made initially.Method one is almost invisible since it has almost the same returns as the market. 
 
 \begin{figure}[h!]
   \centering
@@ -366,7 +366,7 @@ When comparing all contextual bandits methods, it can be seen that the ad-hoc me
 \subsection{Method 4}
 
 \subsubsection{Implementation}
-Similarly to method 1, method 4 is also an ad hoc method based on policy gradient method. The portfolio allocation problem is framed as a k-armed bandits problem where the actions are the five cryptocurrencies (including cash). The difference in the two methods comes from the way the action preference is updated.  With the policy gradient method the objective is to optimize the preference function. It is defined as a function of some parameters $\theta$. The probability of selecting any action for each state and the transition probability thus also depends on $\theta$. Our implementation closely follows that of Sutton and Barto (add reference here). More specifically, we have
+Similar to method 1, method 4 is also an ad hoc method based on the policy gradient method. The portfolio allocation problem is framed as a k-armed bandits problem where the actions are the five cryptocurrencies (including cash). The difference in the two methods comes from the way the action preference is updated.  With the policy gradient method the objective is to optimize the preference function. The preference function is defined as a function of some parameters $\theta$. The probability of selecting any action for each state and the transition probability therefore also depends on $\theta$. Our implementation closely follows that of Sutton and Barto (add reference here). More specifically, we have
 \begin{equation}
 \pi_t (a|s,\theta)  = \frac{e^{h(s,a,\theta)}}{\sum_{b=1}^{5} e^{h(s,b,\theta)}}, \; a=1,...,5
 \end{equation}
@@ -377,11 +377,11 @@ where $\pi$ denotes once again the preference probabilities and $h$ denotes the 
 \begin{equation}
 \theta := (\theta_1,...,\theta_5)^T
 \end{equation}
-The parameters are continuously updated and it affects the action selection and the distribution of the states which complicates the calculation of the gradient ascent. There exist a theorem that states that the gradient ascent can be approximated analytically. This theorem allows the calculation of the sample gradient ascent without taking the derivative of the state distribution. This approximation is only proportional to the true value and the learning step size $\alpha$ will have to take into account this constant of proportionality as well. The values of $\theta$ are then updated in the following way:
+The parameters are continuously updated, they affect the action selection and the distribution of the states which complicates the calculation of the gradient ascent. There is a theorem stating that the gradient ascent can be approximated analytically. This theorem allows for the calculation of the sample gradient ascent without taking the derivative of the state distribution. This approximation is only proportional to the true value, the learning step size $\alpha$ will have to take into account this constant of proportionality as well. The values of $\theta$ are then updated in the following way:
 \begin{equation}
 \theta_{t+1} = \theta_t + \alpha G_t \frac{\nabla \pi(A_t | S_t,\theta_t)}{\pi(A_t | S_t,\theta_t)}
 \end{equation}
-where $S_t$ is simply the previous period return and $G_t$ is the current return (i.e. it is a myopic approach to the problem). Note also that 
+where $S_t$ is the previous period return and $G_t$ is the current return (i.e. it is a myopic approach to the problem). Note also that 
 \begin{equation}
 \frac{\nabla \pi(A_t | S_t,\theta_t)}{\pi(A_t | S_t,\theta_t)} = \nabla log(\pi(A_t|S_t,\theta))
 \end{equation} \\
@@ -389,11 +389,11 @@ In theory, the agent's action is to put all of the money in the stock with the m
 \begin{equation}
 R_{t+1}' = y_{t+1} \cdot (\pi(1,\theta),\pi(2,\theta),\pi(3,\theta),\pi(4,\theta),\pi(5,\theta))^T 
 \end{equation}
-thus making this an ad hoc method akin to method 1. Method 4 is therefore an alternative implementation of method 1, where the agent behaves myopically. We rely again on the simplifying assumption that 
+thus making this an ad hoc method akin to method 1. Method 4 is  an alternative implementation of method 1, where the agent behaves myopically. Relying again on the simplifying assumption that 
 $$E[R_t] \approx E[R_t']$$
 and we can expect results to be similar to a myopic implementation of method 1.
 
-The function used to simulate a sing episode of method 4 is \code{GradPolControl} and the parameters are as follows:
+The function used to simulate a single episode of method 4 is \code{GradPolControl} and the parameters are as follows:
 \begin{itemize}
   \item \code{init\_weights}: 
   \item \code{theSeed}: 
@@ -403,7 +403,7 @@ The function used to simulate a sing episode of method 4 is \code{GradPolControl
 \end{itemize}
 
 \subsubsection{Analysis}
-Intuitively, it is not safe to make the assumption that $E[R_t] \approx E[R_{t+1}]$ since the action of the agent is different. The results are however encouraging. For episodes with 200 periods the agent beats the market about 63\% of the time. Interestingly, the step size made no difference in the percentage of time the agent beats the market. One could conclude that the learning step size makes does not matter, but clearly by looking at the graph comparing the market return and the various step size, it is safe to conclude that the learning step size matters. The weights of each cryptocurrency in the portfolio varied a lot more when there was a smaller learning step, thus there was a difference in the return. The timing at which the episode make a big difference in the performance of the agent. The agent seems to be performing much better when the episodes starts after the spike. \par
+Intuitively, it is not safe to make the assumption that $E[R_t] \approx E[R_{t+1}]$ since the action of the agent is different. The results are encouraging however, episodes with 200 periods beat the market about 63\% of the time. Interestingly, the step size makes no difference in the percentage of time the agent beats the market. One could conclude that the learning step size  does not matter. But by looking at the graph comparing the market return and the various step size, it is safe to conclude that the learning step size matters. The weights of each cryptocurrency in the portfolio varied a lot more when there was a smaller learning step, resulting in different returns. The timing of the episode makes a big difference to the performance of the agent. The agent seems to be performing much better when the episodes starts after the spike. \par
 
 \begin{figure}[h!]
   \centering
@@ -417,7 +417,7 @@ Intuitively, it is not safe to make the assumption that $E[R_t] \approx E[R_{t+1
   \label{fig:pg_spike}
 \end{figure}
 
-As expected the agent performs a lot better when the learning step size is smaller (i.e. the agent adapts faster to the change in the market). The fact that the agent mimics pretty closely what the market does is also not surprising since the gradient re-adjust the weights of the currencies depending on the direction the market is taking. The portfolio unexpectedly falls well below the baseline value (i.e. Bitcoin). One would expect the agent to reallocate the cash towards the "safe" choice. The baseline with a constant return of zero is the best choice in this case. From the graph below there is no increase in the bitcoin preference. One way to interpret this is to think that the agent would rather go towards something more volatile since there is more chance of a higher return. It is a major drawback of this method because high risk can lead to high return but to substantial losses as well. However, the biggest drawback of this method is obviously its lack of mathematical foundation. It is not mathematically sound.
+As expected the agent performs a lot better when the learning step size is smaller (i.e. the agent adapts faster to the change in the market). The fact that the agent mimics closely what the market does is also not surprising since the gradient re-adjusts the weights of the currencies depending on the direction the market is heading. The portfolio unexpectedly falls well below the baseline value (i.e. Bitcoin). One would expect the agent to reallocate the cash towards the "safe" choice. The baseline with a constant return of zero is the best choice in this case. From the graph below there is no increase in the bitcoin preference. One way to interpret this is to think that the agent would rather go towards something more volatile since there is a higher of a better return. This is a major drawback of this method because high risk can lead to high return but can also lead to substantial losses as well. However, the main drawback of this method is its lack of mathematical foundation. 
 
 \begin{figure}[h!]
   \centering
