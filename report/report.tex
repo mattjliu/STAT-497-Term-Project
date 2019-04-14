@@ -383,7 +383,7 @@ The parameters are continuously updated and it affects the action selection and 
 \end{equation}
 where $S_t$ is simply the previous period return and $G_t$ is the current return (i.e. it is a myopic approach to the problem). Note also that 
 \begin{equation}
-\frac{\nabla \pi(A_t | S_t,\theta_t)}{\pi(A_t | S_t,\theta_t)} = \nabla ln(\pi(A_t|S_t,\theta))
+\frac{\nabla \pi(A_t | S_t,\theta_t)}{\pi(A_t | S_t,\theta_t)} = \nabla log(\pi(A_t|S_t,\theta))
 \end{equation} \\
 In theory, the agent's action is to put all of the money in the stock with the maximum return. Therefore, $A_t$ and $R_{t+1}$ should be defined as in equations (7) and (8) respectively. However, what the agent truly does is rebalance the portfolio according to the preference function $\pi(a,\theta)$ to obtain
 \begin{equation}
