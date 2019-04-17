@@ -100,7 +100,7 @@
   \centering
   \vfill
   {\large{Bakr Abbas, Matthew Liu, Frederic Siino}} \par
-  {\large{Day Month Year}}
+  {\large{17 April 2019}}
 \end{titlingpage}
 
 \newpage
@@ -124,10 +124,10 @@
 \newpage
 
 \section{Introduction}
-One of the main challenges of managing a portfolio or a fund, is the decision process of how to allocate investment resources to each assets. The goal is to maximize returns but also to take into account the variability of the market. The strategy to put all the fund in the most profitable asset could be beneficial in the short run. However, the possibility of that one asset crashing in value is larger than the possibility of multiple assets crashing in value. A portfolio manager should thus diversify its portfolio by investing in multiple assets. This management strategy applies to various class of assets (stocks, real estates, bonds,currencies, etc.). Some markets are more volatile than others due to various reasons. For instances, real estates is much less liquid, hence less volatile than currencies. Currency market has a very high volume of trading. 
+One of the main challenges of managing a portfolio or a fund, is the decision process of how to allocate investment resources to each assets. The goal is to maximize returns but also to take into account the variability of the market. The strategy to put all the fund in the most profitable asset could be beneficial in the short run. However, the possibility of that one asset crashing in value is larger than the possibility of multiple assets crashing in value. A portfolio manager should thus diversify its portfolio by investing in multiple assets. This management strategy applies to various class of assets (stocks, real estates, bonds,currencies, etc.). Some markets are more volatile than others due to various reasons. For instances, real estates is much less liquid, hence less volatile than currencies. On the other hand, the cryptocurrency market has a very high volume of trading, and hence a high liquidity. 
  \\
 
-Cryptocurrencies are decentralized digital assets that behave as an alternative to government issued money. They are being introduced into most investment portfolios. This paper addresses the challenges of managing five different cryptocurrencies with Bitcoin (BTC) being the benchmark. Meaning that the four other currencies are quantified as the price relative to BTC.  Different reinforcement learning methods will be used to manage and optimize the weights assigned to each asset in the portfolio. The first three methods will be based on the contextual bandits model. The final method will be based on a policy gradient model. A more realistic model would also take transaction costs into account, but this will be overlooked for simplicity. \\
+Cryptocurrencies are decentralized digital assets that behave as an alternative to government issued money. They are being introduced into most investment portfolios. This paper addresses the challenges of managing five different cryptocurrencies with Bitcoin (BTC) being the benchmark. Meaning that the four other currencies are quantified as the price relative to BTC.  Different reinforcement learning methods will be used to manage and optimize the weights assigned to each asset in the portfolio. The first three methods will be based on the contextual bandits model. The final method will be based on a policy gradient model. A more realistic model would also take transaction costs into account, but this will be ignored for simplicity. \\
 
 A previous research paper (Jiang, Xu, Liang, 2017) \cite{jiang} has been published on this exact topic based on a framework consisting of Ensemble of Identical Independent Evaluators (EIIE), a Portfolio-Vector Memory (PVM), an Online Stochastic Batch Learning (OSBL) scheme and a fully exploiting strategy. The actions were determined using a policy gradient method and the tested evaluators were a Convolutional Neural Network (CNN), a Recurrent Neural Network (RNN) and a Long Short-Term Memory Network (LSTM). Experiments were run with a trading period of 30 minutes and the RL framework was observed to behave far better than other optimization frameworks in the test period of 2017 but inferior to some frameworks in the test period of 2018. \\
 
@@ -141,7 +141,7 @@ In this project, the environment is solely dictated by the data of the historic 
   \item No market impact: The capital invested by the agent is so insignificant as to have no impact on the market.
 \end{itemize}
 
-This means that the sequence of states and transition probabilities are already predefined based on the data at hand. In particular, we define a price relative vector $y_t$ of the $t$th trading period like Jianget al., namely:
+This means that the sequence of states and transition probabilities are already predefined based on the data at hand. In particular, we define a price relative vector $y_t$ of the $t$th trading period like Jiang et al., namely:
 \begin{equation}
 y_t := v_t \oslash v_{t-1} = \bigg(1,\frac{v_{2,t}}{v_{2,t-1}}, …,\frac{v_{m-1,t}}{v_{m-1,t-1}}, \frac{v_{m,t}}{v_{m,t-1}}\bigg)^T
 \end{equation}
@@ -159,7 +159,7 @@ In addition, we also define a state vector $S_T := (s_{1,T},...,s_{m,T})$ where 
 \begin{equation}
 s_{i,T} = \sum_{t=T-n}^{t=T} \gamma^t y_{i,t}
 \end{equation}
-where $y_{i,t}$ is the $i$th element of the previously defined price relative vector $y_t$, $\gamma$ is a discount factor and $n$ is the size of the history we consider. As such the state is a vector of $n$-step backward relative price changes for each asset discounted by a rate gamma. \\
+where $y_{i,t}$ is the $i$th element of the previously defined price relative vector $y_t$, $\gamma$ is a discount factor and $n$ is the size of the history we consider. As such the state is a vector of $n$-step previous relative price changes for each asset discounted by a rate gamma. This can also be seen as the trend in price changes for the previous $n$ periods. \\
 
 Thus, based on the environment and problem definition, we have 
 \begin{equation}
@@ -169,7 +169,7 @@ for the deterministic sequence of states
 $$S_1,S_1,...,S_{T-n}$$
 which follows since the sequence $y_1,y_2,...,y_T$ is determined by the data. \\
 
-For the sake of simplicity, an additional assumption that there are no transaction fees is added. Thus the focus turns to wether or not the agent is able to learn the optimal re-weighting of the portfolio given the state at each time, i.e. the agent must identify promising assets. The question of transaction fees and practicality will be judged in a seperate analysis. \\
+For the sake of simplicity, an additional assumption that there are no transaction fees is included. Thus the focus turns to wether or not the agent is able to learn the optimal re-weighting of the portfolio given the state at each time, i.e. the agent must identify promising assets. The question of transaction fees and practicality will be judged case-by-case. \\
 
 Lastly, since we let the agent run through all the available data when conducting an experiment, the problem becomes an episodic task where $t=1,...,T-n$ and $T$ is the number of trading periods in our data set. Note here that $t$ ends at $t=T-n$ since the window of the first $n$ price changes needs to be considered as the starting state $S_1$, therefore reducing the number of states from $T$ to $T-n$. In practice however, the problem is a continuing task since the agent is tasked to a manage a portfolio forever.
 
@@ -384,7 +384,7 @@ where $\pi$ denotes once again the preference probabilities and $h$ denotes the 
 \begin{equation}
 \theta := (\theta_1,...,\theta_5)^T
 \end{equation}
-The parameters are continuously updated, they affect the action selection and the distribution of the states which complicates the calculation of the gradient ascent. There is a theorem stating that the gradient ascent can be approximated analytically. This theorem allows for the calculation of the sample gradient ascent without taking the derivative of the state distribution. This approximation is only proportional to the true value, the learning step size $\alpha$ will have to take into account this constant of proportionality as well. The values of $\theta$ are then updated in the following way:
+The parameters are continuously updated, they affect the action selection and the distribution of the states which complicates the calculation of the gradient ascent. Moreover, we know that according to Sutton and Barto's policy gradient theorem, we can calculate the sample gradient ascent without taking the derivative of the state distribution. This approximation is only proportional to the true value, the learning step size $\alpha$ will have to take into account this constant of proportionality as well. The values of $\theta$ are then updated in the following way:
 \begin{equation}
 \theta_{t+1} = \theta_t + \alpha G_t \frac{\nabla \pi(A_t | S_t,\theta_t)}{\pi(A_t | S_t,\theta_t)}
 \end{equation}
@@ -423,7 +423,7 @@ Intuitively, it is not safe to make the assumption that $E[R_t] \approx E[R_{t+1
   \label{fig:pg_spike}
 \end{figure}
 
-As expected the agent performs a lot better when the learning step size is smaller (i.e. the agent adapts faster to the change in the market).  The optimal step size however is not the smallest est value. Of the many learning step that were tried, the best one was the one that was not too large because it would take in too much noise and not too small to allow the agent to adapt to the market. The fact that the agent mimics pretty closely what the market does is also not surprising since the gradient re-adjust the weights of the currencies depending on the direction the market is taking. The portfolio unexpectedly falls well below the baseline value (i.e. Bitcoin). One would expect the agent to reallocate the cash towards the "safe" choice. The baseline with a constant return of zero is the best choice in this case. From the graph below there is no increase in the bitcoin preference. One way to interpret this is to think that the agent would rather go towards something more volatile since there is more chance of a higher return. It is a major drawback of this method because high risk can lead to high return but to substantial losses as well. However, the biggest drawback of this method is obviously its lack of mathematical foundation as it is not mathematically sound.
+As expected the agent performs a lot better when the learning step size is smaller (i.e. the agent adapts faster to the change in the market).  The optimal step size however is not the smallest value. Of the many learning step that were tried, the best one was the one that was not too large because it would take in too much noise and not too small to allow the agent to adapt to the market. The fact that the agent mimics pretty closely what the market does is also not surprising since the gradient re-adjust the weights of the currencies depending on the direction the market is taking. The portfolio unexpectedly falls well below the baseline value (i.e. Bitcoin). One would expect the agent to reallocate the cash towards the "safe" choice. The baseline with a constant return of zero is the best choice in this case. From the graph below there is no increase in the bitcoin preference. One way to interpret this is to think that the agent would rather go towards something more volatile since there is more chance of a higher return. It is a major drawback of this method because high risk can lead to high return but to substantial losses as well. However, the biggest drawback of this method is obviously its lack of mathematical foundation as it is not mathematically sound.
 
 \begin{figure}[h!]
   \centering
