@@ -106,30 +106,11 @@
 \newpage
 
 \tableofcontents
-\newpage
-
-\section{To do list}
-
-\begin{itemize}
-  \item Add footnotes
-  \item Add links (to Jiang et al. and Sutton and Barto)
-  \item Add references
-  \item Add function description for policy gradient
-  \item Add conclusion
-  \item Determine if extra analysis should be added
-  \item Add table of contents
-  \item Review report
-\end{itemize}
 
 \newpage
 
 \section{Introduction}
-<<<<<<< HEAD
-One of the main challenges of managing a portfolio or a fund, is the decision process of how to allocate investment resources to each assets. The goal is to maximize returns but also to take into account the variability of the market. The strategy to put all the fund in the most profitable asset could be beneficial in the short run. However, the possibility of that one asset crashing in value is larger than the possibility of multiple assets crashing in value. A portfolio manager should thus diversify its portfolio by investing in multiple assets. This management strategy applies to various class of assets (stocks, real estates, bonds,currencies, etc.). Some markets are more volatile than others due to various reasons. For instances, real estates is much less liquid, hence less volatile than currencies. On the other hand, the cryptocurrency market has a very high volume of trading, and hence a high liquidity. 
-=======
-One of the main challenges of managing a portfolio or a fund, is the decision process of how to allocate investment resources to each assets. The goal is to maximize returns but also to take into account the variability of the market. The strategy to put all the fund in the most profitable asset could be beneficial in the short run. However, the possibility of one asset crashing in value is larger than the possibility of multiple assets crashing in value. A portfolio manager should  diversify its portfolio by investing in multiple assets in anticipation of crashes. This management strategy applies to various classes of assets (stocks, real estates, bonds,currencies, etc.). Some markets are more volatile than others. For instances, real estates is less liquid, hence less volatile than currencies. The currency market has a very high volume of trading. 
->>>>>>> f7ad3d16719914dc0f5687247662be2c1301f1a7
- \\
+One of the main challenges of managing a portfolio or a fund, is the decision process of how to allocate investment resources to each assets. The goal is to maximize returns but also to take into account the variability of the market. The strategy to put all the fund in the most profitable asset could be beneficial in the short run. However, the possibility of one asset crashing in value is larger than the possibility of multiple assets crashing in value. A portfolio manager should  diversify its portfolio by investing in multiple assets in anticipation of crashes. This management strategy applies to various classes of assets (stocks, real estates, bonds,currencies, etc.). Some markets are more volatile than others. For instances, real estates is less liquid, hence less volatile than currencies. On the other hand, the cryptocurrency market has a very high volume of trading, and hence a high liquidity. 
 
 Cryptocurrencies are decentralized digital assets that behave as an alternative to government issued money. They are being introduced into most investment portfolios. This paper addresses the challenges of managing five different cryptocurrencies with Bitcoin (BTC) being the benchmark. Meaning that the four other currencies are quantified as the price relative to BTC.  Different reinforcement learning methods will be used to manage and optimize the weights assigned to each asset in the portfolio. The first three methods will be based on the contextual bandits model. The final method will be based on a policy gradient model. A more realistic model would also take transaction costs into account, but this will be ignored for simplicity. \\
 
@@ -184,9 +165,9 @@ Lastly, since we let the agent run through all the available data when conductin
 \subsubsection{Implementation}
 Method 1 is an ad-hoc method based on the contextual bandits problem. The portfolio allocation optimization problem is reframed as a k-armed bandits problem where we have one arm for each asset in the portfolio (including cash). The action preference method is used, where 
 $$H_t(a), \; a = 1,...,k$$
-are the action preferences for all k assets. However, a slight modification is done when defining actions and updating the preference functions. When computing probabilities of chosing a given action, we define $\pi_t(a|S_t)$ as
+are the action preferences for all k assets (in this project, $k=5$). However, a slight modification is done when defining actions and updating the preference functions. When computing probabilities of chosing a given action, we define $\pi_t(a|S_t)$ as
 \begin{equation}
-\pi_t (a|S_t) := Pr[A_t=a | S_t,R_1,...,R_{t-1}] = \frac{e^{H_t(a) S_{a,t}}}{\sum_{b=1}^{k} e^{H_t(b) S_{b,t}}}, \; a=1,...,k
+\pi_t (a|S_t) := Pr[A_t=a | S_t,R_1,...,R_{t-1}] = \frac{e^{H_t(a) S_{a,t}}}{\sum_{b=1}^{k} e^{H_t(b) S_{b,t}}}, \; a=1,...,5
 \end{equation}
 where the previously defined state vector $S_t$ from equation (4) is included due to the contextual nature of the problem. The $n$-size history of discounted price changes represented by $S_t$ will thus change the probabilities of each asset based on whether or not their prices are observed to have declined or increased in the past $n$ periods (uptrends increase preference, and downtrends decrease preference). Following the standard contextual bandits framework, this leads to the action at time $t$ of
 \begin{equation}
@@ -199,7 +180,7 @@ R_{t+1} := y_{t+1} \cdot A_t = y_{t+1,A_t}
 i.e., the relative price change of asset $A_t$. The problem then reduces to a simple contextual bandits problem where one and only one arm is pulled by the agent at each time steps. \par
 However, in the ad-hoc method the actual action taken by the agent at time $t$ is the vector of contextual preference values, i.e. 
 \begin{equation}
-A_t' = (\pi_t(1|S_t),\pi_t(2|S_t),...,\pi_t(k|S_t))^T
+A_t' = (\pi_t(1|S_t),\pi_t(2|S_t),...,\pi_t(5|S_t))^T
 \end{equation}
 Since all $\pi_t(k|S_t)$'s sum to 1, this is a valid portfolio weight vector, and we can set $A_t' = w_t$. The rewards are then computed as 
 \begin{equation}
@@ -214,7 +195,7 @@ H_{t+1}(a) = H_t(a) - \alpha (R_t' - \bar{R_t})\pi_t(a), \; a \neq A_t
 \end{equation}
 where $\pi_t(a)$ represents the non-contextual policy 
 \begin{equation}
-\pi_t (a) := Pr[A_t=a | R_1,...,R_{t-1}] = \frac{e^{H_t(a)}}{\sum_{b=1}^{k} e^{H_t(b)}}, \; a=1,...,k
+\pi_t (a) := Pr[A_t=a | R_1,...,R_{t-1}] = \frac{e^{H_t(a)}}{\sum_{b=1}^{k} e^{H_t(b)}}, \; a=1,...,5
 \end{equation} \\
 Intuitively, this method relies on the simplfying assumption that rewards produced by actions $A_t'$ is a good enough approximation of rewards produced by actions $A_t$. In other words, 
 $$E[R_t' | S_t] \approx E[R_t | S_t]$$
@@ -242,7 +223,7 @@ This method does accomplish our main goal, which is to beat the market.
     \includegraphics[width=\linewidth]{figures/agt_vs_mkt1.png}
   \end{subfigure}
   \begin{subfigure}[b]{0.4\linewidth}
-    \includegraphics[width=\linewidth]{figures/actions1.png}
+    \includegraphics[width=\linewidth]{figures/prefs1.png}
   \end{subfigure}
   \caption{Agent performance and agent actions over time (method 1)}
   \label{fig:method1}
@@ -251,7 +232,7 @@ This method does accomplish our main goal, which is to beat the market.
 \subsection{Method 2}
 
 \subsubsection{Implementation}
-Method 2 is another preference function method that takes advantage of the fact that actions carried out by our agent do not affect rewards and transition probabilities. As such it is possible to sample many different actions at each timestep and observe rewards that follow had the agent taken that action. \\
+Method 2 is another preference function method that takes advantage of the fact that actions carried out by our agent do not affect rewards and transition probabilities. As such it is possible to sample many different actions at each timestep and observe rewards that follow had the agent taken that action. \par
 Again we define a contextual policy function $\pi_t (a|S_t)$ and a normal policy function $\pi_t (a)$ from equations (6) and (13) respectively.
 We also define a new reward vector $R_{t}^{All}$ where
 \begin{equation}
@@ -289,7 +270,7 @@ The function used to simulate a single episode of method 2 is \code{simulate\_co
 
 \subsubsection{Analysis}
 Using this method the agent follows the market, the returns are slightly below the market but it experiences positive returns (63.8\%). The preferences in method 2 varry a lot less than method 1 since the preferences are updated as if each “arm” was pulled (as opposed to the action being the argmax of the softmax output given the state). The largest increase in preference was observed when XRP had a large spike as discussed previously. But the effects were not as drastic as the previous method since the preferences are updated more uniformly.
-A grid search was once again used to find the optimal parameters as in method one \footnote{see appendix figure A.3}. In addition, the same range of values were used for alpha and window size. The outcome was that the lowest learning rate would result in the highest return as well as the lowest window size. 
+A grid search was once again used to find the optimal parameters as in method one \footnote{see appendix figure A.3}. In addition, the same range of values were used for alpha and window size. The outcome was that the lowest learning rate would result in the highest return as well as the smallest window size, meaning that the best parameters for method 2 are the opposite of the best parameters for method 1. We can assume that this is the case since the second method updates the estimates of each currency at each time step, and as such a large learning rate would result in a large variance of estimates, thus decreasing the reward of the agent.
 The main goal of this modeling is to train an agent to beat the market, but in this method it has failed to do so. 
 
 \begin{figure}[h!]
@@ -340,12 +321,10 @@ The function used to simulate a single episode of method 3 is \code{simulate\_co
   \item \code{data}: data that is used to run experiments
 \end{itemize}
 
-\newpage
-
 \subsubsection{Analysis}
 This is the only method that will have an element of randomness, as it uses an epsilon greedy approach. In practice the transaction costs involved in this method would be very high when compared to the other method.The “all or nothing” method  experiences the worst returns when compared to the other Contextual Bandit methods. It is the only the method that actually experiences negative returns, but this changes drastically when the seed is changed. The only way this method can perform better is if it is able to identify the currency that will beat the market at each time step, but this is not possible given the simplicity of the model.
 The grid search was not conducted for this method since the seed changes what the returns will be. Setting a seed that will return the highest return would only make the model look better than it actually is.
-This method does not perform well. The non-stationary nature of the problem forces the agent to continuously explore, and thus there is no true convergence. 
+In addition, the non-stationary nature of the problem forces the agent to continuously explore, and thus there is no true convergence. 
 
 \begin{figure}[h!]
   \centering
@@ -360,7 +339,7 @@ This method does not perform well. The non-stationary nature of the problem forc
 \end{figure}
 
 \subsubsection{Contextual bandits comparison}
-When comparing all contextual bandits methods, it can be seen that the ad-hoc method beats all the other methods and it outperforms the market. All discussed earlier this is mainly due to the spike in XRP and how the agent decides to heavily invest in it. When only using the data past the spike, the returns from all the methods are very close to each other. This is because method 1 does not shift the weights of the portfolio to XRP as it did earlier,so it did not take advantage of the spike.It should be noted that method 3 should not be compared it’s previous return since there is randomness and the agent would not make the same decisions it made initially. Method one is almost invisible since it has almost the same returns as the market. 
+When comparing all contextual bandits methods, it can be seen that the ad-hoc method beats all the other methods and it outperforms the market. As discussed earlier this is mainly due to the spike in XRP and how the agent decides to heavily invest in it. When only using the data past the spike, the returns from all the methods are very close to each other. This is because method 1 does not shift the weights of the portfolio to XRP as it did earlier, so it did not take advantage of the spike.It should be noted that method 3 should not be compared it’s previous return since there is randomness and the agent would not make the same decisions it made initially. Method one is almost invisible since it has almost the same returns as the market. 
 
 \begin{figure}[h!]
   \centering
@@ -427,11 +406,7 @@ Intuitively, it is not safe to make the assumption that $E[R_t] \approx E[R_{t+1
   \label{fig:pg_spike}
 \end{figure}
 
-<<<<<<< HEAD
-As expected the agent performs a lot better when the learning step size is smaller (i.e. the agent adapts faster to the change in the market).  The optimal step size however is not the smallest value. Of the many learning step that were tried, the best one was the one that was not too large because it would take in too much noise and not too small to allow the agent to adapt to the market. The fact that the agent mimics pretty closely what the market does is also not surprising since the gradient re-adjust the weights of the currencies depending on the direction the market is taking. The portfolio unexpectedly falls well below the baseline value (i.e. Bitcoin). One would expect the agent to reallocate the cash towards the "safe" choice. The baseline with a constant return of zero is the best choice in this case. From the graph below there is no increase in the bitcoin preference. One way to interpret this is to think that the agent would rather go towards something more volatile since there is more chance of a higher return. It is a major drawback of this method because high risk can lead to high return but to substantial losses as well. However, the biggest drawback of this method is obviously its lack of mathematical foundation as it is not mathematically sound.
-=======
-As expected the agent performs a lot better when the learning step size is smaller (i.e. the agent adapts faster to the change in the market).  The optimal step size however is not the smallest est value. Of the many learning step that were tried, the best one was the one that was not too large because it would take in too much noise and not too small to allow the agent to adapt to the market. The fact that the agent mimics how the market behaves is also not surprising since the gradient re-adjusts the weights of the currencies depending on the direction the market is taking. The portfolio unexpectedly falls well below the baseline value (i.e. Bitcoin). One would expect the agent to reallocate the cash towards the "safe" choice. The baseline with a constant return of zero is the best choice in this case. From the graph below there is no increase in the bitcoin preference. One way to interpret this is to think that the agent would rather go towards something more volatile since there is more chance of a higher return. It is a major drawback of this method because high risk can lead to high return but to substantial losses as well. However, the biggest drawback of this method is obviously its lack of mathematical foundation as it is not mathematically sound.
->>>>>>> f7ad3d16719914dc0f5687247662be2c1301f1a7
+As expected the agent performs a lot better when the learning step size is smaller (i.e. the agent adapts faster to the change in the market).  The optimal step size however is not the smallest value. Of the many learning steps that were tried, the best one was the one that was not too large because it would take in too much noise and not too small to allow the agent to adapt to the market. The fact that the agent mimics how the market behaves is also not surprising since the gradient re-adjusts the weights of the currencies depending on the direction the market is taking. The portfolio unexpectedly falls well below the baseline value (i.e. Bitcoin). One would expect the agent to reallocate the cash towards the "safe" choice. The baseline with a constant return of zero is the best choice in this case. From the graph below there is no increase in the bitcoin preference. One way to interpret this is to think that the agent would rather go towards something more volatile since there is more chance of a higher return. It is a major drawback of this method because high risk can lead to high return but to substantial losses as well. However, the biggest drawback of this method is obviously its ad-hoc nature.
 
 \begin{figure}[h!]
   \centering
@@ -446,9 +421,9 @@ As expected the agent performs a lot better when the learning step size is small
 \end{figure}
 
 \section{Conclusion}
-It’s noticeable that the starting date effects how each agent is learning, for example, the agent 1 one does not beat the others without the spike of XRP. Agent 3 performs much better without the spike (sampling is different due to epsilon greedy method used). The most profitable agent(1) is actually modeled without using any real proven mathematics. Agent 2 is very consistent, even though it does not beat the market during the time period XRP spikes it gives similar returns Agent returns 22.4\% vs Market returns 24.357\%. \par
-The most profitable agent for method 4 uses a step size of $2^{-8}$ which is the middle value of all the values tested. The agent surprisingly beat the market over the entire period of the historical data. The agent surprisingly beat the market over the entire period of the historical data. This means that the learning size is big enough to allow the agent to learn without being affected too much by the noise of the data. \par
-One can affirm that it possible to beat the market with some method presented in this report. However, these results are to be taken with caution. None of the results presented took into account the cost of trading . Since the agent is trading at a somewhat high frequency (every 2 hours), it is clear that the impact on the return would be considerable. Another thing to take into account is that not all the method are mathematically sound, which means there is no proof these result will hold under different circumstances. It is worth mentioning that method 2 is a very valid trading method that could beat consistently the market. One thing that could be interesting developing on is having a more “stable” currency as baseline. Bitcoins value fluctuates a lot compared to the US dollar and thus by taking this cryptocurrency as baseline makes the results less reliable as they are not necessarily consistent.  
+It’s noticeable that the starting date affects how each agent is learning, for example, the agent 1 one does not beat the others without the spike of XRP. Agent 3 performs much better without the spike (sampling is different due to epsilon greedy method used). The most profitable agent (agent 1) is actually implemented using an ad-hoc method. Agent 2 is very consistent, even though it does not beat the market during the time period XRP spikes it gives similar returns Agent returns 22.4\% vs Market returns 24.357\%. \par
+The most profitable agent for method 4 uses a step size of $2^{-8}$ which is the middle value of all the values tested. The agent surprisingly beat the market over the entire period of the historical data. This means that the learning size is big enough to allow the agent to learn without being affected too much by the noise of the data. \par
+One can affirm that it possible to beat the market with some methods presented in this report. However, these results are to be taken with caution. None of the results presented took into account the cost of trading . Since the agent is trading at a somewhat high frequency (every 2 hours), it is clear that the impact on the return would be considerable. Another thing to take into account is that some of the methods are ad-hoc, which means there is no proof these result will hold under different circumstances. It is worth mentioning that method 2 is a very valid trading method that could consistently beat the market. For a potential avenue of research, we could also chose a more “stable” currency as baseline. Bitcoins value fluctuates a lot when compared to the US dollar and thus by taking this cryptocurrency as baseline makes the results less reliable as they are not necessarily consistent.  
 
 \newpage
 
